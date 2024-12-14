@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import { TeneoWebsocketClient } from './src/ping';
 import { createProxyConfig, logMessage, prompt } from './src/utils';
-import { INTERVAL } from './src/types';
+import { INTERVAL, WebSocketConnectionState } from './src/types';
 import chalk from 'chalk';
 
 /**
@@ -15,16 +15,15 @@ async function handleSingleClient(
 ): Promise<void> {
 	const client = new TeneoWebsocketClient(userId, proxyConfig);
 
-	const intervalId = setInterval(async () => {
+	setInterval(async () => {
 		try {
-			if (client.getState() === 'DISCONNECTED') {
+			if (client.getState() === WebSocketConnectionState.DISCONNECTED) {
 				await client.connect();
 			}
 			await client.ping();
 		} catch (error) {
 			logMessage('error', 'An error occurred', error as string);
 			await client.disconnect();
-			clearInterval(intervalId);
 		}
 	}, INTERVAL);
 }
